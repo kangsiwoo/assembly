@@ -65,3 +65,55 @@
 4. 그 결과가 작거나 같다면 .L3지점으로 이동
 5. -4(%rbp)에 1을 더함
 6. 이 과정이 끝나면 호출된 자리로 돌아감 (예상)
+
+### While
+
+While 문도 동일한 반복문 이기 때문에 크게 다른 부분이 없다.
+
+위 코드를 C언어로 번역하면 
+
+    for (int i = 0; i < 10; ++i) {
+
+    }
+
+이렇게 변역할 수 있고,
+
+while 문을 어셈블리 코드로 번역하면
+
+    int i = 0;
+    while(i != 9) {
+        i++;
+    }
+
+이 코드가 
+
+        movl	$0, -4(%rbp)
+        jmp	.L2
+    .L3:
+        addl	$1, -4(%rbp)
+    .L2:
+        cmpl	$9, -4(%rbp)
+        jne	.L3
+
+이렇게 번역 될 수 있다.
+
+이처럼 jne명령어를 제외하면 같다는걸 확인할 수 있다.
+
+이 부분은 for문에서 i < 10와 i != 9이기 때문에 차이가 나는 것이다.
+
+이처럼 비교하는 명령어는 다양하지만 같은용도로 사용할 수 있다.
+
+1. je : Jump if Equal
+2. jen : Jump if Not Equal
+3. jz : Jump if Zero
+4. jnz : Jump if Not Zero
+5. jl : Jump if Less than
+6. jle : Jump if Less than or Equal
+7. jg : Jump if Greater than
+8. jge : Jump if Greater than or Equal
+9. jb : Jump if Below
+10. jbe : Jump if Below or Equal
+11. ja : Jump if Above
+12. jae : Jump if Above or Equal
+
+(이렇게 정리해두면 외우는데 크게 문제가 되지는 않을거 같다.)
