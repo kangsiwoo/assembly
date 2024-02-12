@@ -134,3 +134,67 @@ break문은 상당히 간단하다.
         nop
 
 이렇게 작성할 수있다.
+
+# Print
+
+C++에서 프린트를 할 수 있는 방법은 두 가지가 있다.
+
+    printf("Hello World");
+<br>
+
+    std::cout << "Hello World";
+
+이렇게 두 가지가 있는데 기능에는 큰 차이가 없지만 어셈블리어에서는 많은 차이가 보인다.
+
+printf를 활용하면 main 함수 위에 명령어가 추가로 생긴다.
+
+    printf(char const*, ...):
+        pushq	%rbp
+        pushq	%rbx
+        subq	$56, %rsp
+        leaq	48(%rsp), %rbp
+        movq	%rcx, 32(%rbp)
+        movq	%rdx, 40(%rbp)
+        movq	%r8, 48(%rbp)
+        movq	%r9, 56(%rbp)
+        leaq	40(%rbp), %rax
+        movq	%rax, -16(%rbp)
+        movq	-16(%rbp), %rbx
+        movl	$1, %ecx
+        movq	__imp___acrt_iob_func(%rip), %rax
+        call	*%rax
+        movq	%rax, %rcx
+        movq	32(%rbp), %rax
+        movq	%rbx, %r8
+        movq	%rax, %rdx
+        call	__mingw_vfprintf
+        movl	%eax, -4(%rbp)
+        movl	-4(%rbp), %eax
+        addq	$56, %rsp
+        popq	%rbx
+        popq	%rbp
+        ret
+
+함수를 호출할때는 
+
+    leaq	.LC0(%rip), %rax
+	movq	%rax, %rcx
+	call	printf(char const*, ...)
+
+이러한 명령어가 생긴다.
+
+반면에 std::cout을 사용하면 밑에 명령어가 추가된다.
+
+    .refptr.std::cout:
+	    .quad	std::cout
+
+함수를 호출할때는 다소 복잡한 오퍼렌드가 생긴다.
+
+    leaq	.LC0(%rip), %rax
+    movq	%rax, %rdx
+    movq	.refptr.std::cout(%rip), %rax
+    movq	%rax, %rcx
+    call	std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*)
+
+어셈블리에서 프린트를 사용하기에는 무리가 있을 수 있지만 만약 사용해야 한다면 나는 printf와 같은 방식으로 출력할 것 같다.
+
