@@ -188,7 +188,7 @@ printf를 활용하면 main 함수 위에 명령어가 추가로 생긴다.
     .refptr.std::cout:
 	    .quad	std::cout
 
-함수를 호출할때는 다소 복잡한 오퍼렌드가 생긴다.
+함수를 호출할때는 다소 복잡한 오퍼렌드를 활용하여야 한다.
 
     leaq	.LC0(%rip), %rax
     movq	%rax, %rdx
@@ -197,4 +197,52 @@ printf를 활용하면 main 함수 위에 명령어가 추가로 생긴다.
     call	std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*)
 
 어셈블리에서 프린트를 사용하기에는 무리가 있을 수 있지만 만약 사용해야 한다면 나는 printf와 같은 방식으로 출력할 것 같다.
+
+# Scan
+
+scan함수도 두가지 방법을 알아볼것이다.
+
+먼저 scanf방식은 printf와 같이 위에 어셈블리 코드가 추가된다.
+
+    scanf(char const*, ...):
+        pushq	%rbp
+        pushq	%rbx
+        subq	$56, %rsp
+        leaq	48(%rsp), %rbp
+        movq	%rcx, 32(%rbp)
+        movq	%rdx, 40(%rbp)
+        movq	%r8, 48(%rbp)
+        movq	%r9, 56(%rbp)
+        leaq	40(%rbp), %rax
+        movq	%rax, -16(%rbp)
+        movq	-16(%rbp), %rbx
+        movl	$0, %ecx
+        movq	__imp___acrt_iob_func(%rip), %rax
+        call	*%rax
+        movq	%rax, %rcx
+        movq	32(%rbp), %rax
+        movq	%rbx, %r8
+        movq	%rax, %rdx
+        call	__mingw_vfscanf
+        movl	%eax, -4(%rbp)
+        movl	-4(%rbp), %eax
+        addq	$56, %rsp
+        popq	%rbx
+        popq	%rbp
+        ret
+
+std::cin 방식도 동일하게 복잡한 오퍼렌드를 활용해야 한다.
+
+    leaq	-4(%rbp), %rax
+    movq	%rax, %rdx
+    movq	.refptr.std::cin(%rip), %rax
+    movq	%rax, %rcx
+    call	std::basic_istream<char, std::char_traits<char> >::operator>>(int&)
+
+이러한 명령어들은 자료형에 따라 명령어가 달라지는것을 확인할 수 있다.
+
+### int형
+    call	std::basic_istream<char, std::char_traits<char> >::operator>>(int&)
+### char형
+    call	std::basic_istream<char, std::char_traits<char> >& std::operator>><char, std::char_traits<char> >(std::basic_istream<char, std::char_traits<char> >&, char&)
 
